@@ -12,7 +12,7 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: "https://task-management.cnxhub.in/",
+    origin: "https://task-management.cnxhub.in",
     credentials: true,
   }),
 );
