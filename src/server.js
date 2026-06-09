@@ -12,7 +12,7 @@ connectDB();
 
 app.use(
   cors({
-    origin: "http://task-management.cnxhub.in/",
+    origin: "https://task-management.cnxhub.in/",
     credentials: true,
   }),
 );
