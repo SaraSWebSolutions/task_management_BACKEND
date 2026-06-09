@@ -6,10 +6,9 @@ const cors = require("cors");
 const connectDB = require("./config/db");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 
-const app = express();
 
-connectDB();
 
+app.use(express.json());
 app.use(
   cors({
     origin: "https://task-management.cnxhub.in/",
@@ -17,7 +16,9 @@ app.use(
   }),
 );
 
-app.use(express.json());
+const app = express();
+
+connectDB();
 
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/tasks", require("./routes/taskRoutes"));
