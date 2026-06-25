@@ -10,13 +10,13 @@ const dashboardRoutes = require("./routes/dashboardRoutes");
 const app = express();
 
 app.use(express.json());
-// app.use(
-//   cors({
-//     origin: "https://task.cnxhub.in",
-//     credentials: true,
-//   }),
-// );
-app.use(cors());
+app.use(
+  cors({
+    origin: "https://task.cnxhub.in",
+    credentials: true,
+  }),
+);
+// app.use(cors());
 
 connectDB();
 
