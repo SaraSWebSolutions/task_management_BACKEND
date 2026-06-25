@@ -16,6 +16,7 @@ const {
   getTaskById,
   addComment,
   assignTasks,
+  getEmployeeTasks,
 } = require("../controllers/taskController");
 
 router.post("/", auth, createTask);
@@ -37,5 +38,7 @@ router.post("/bulk-create", auth, bulkCreateTasks);
 router.put("/:id", auth, updateTask);
 
 router.delete("/:id", auth, deleteTask);
+
+router.get("/employee/:employeeId", auth, getEmployeeTasks);
 
 module.exports = router;

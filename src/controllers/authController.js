@@ -6,12 +6,25 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email and Password are required",
+      });
+    }
+
     const user = await User.findOne({ email });
 
-    if (!user)
+    if (!user){
       return res.status(400).json({
         message: "User not found",
       });
+    }
+
+    if (user.status === "INACTIVE") {
+      return res.status(403).json({
+        message: "Your account is inactive. Contact Admin.",
+      });
+    }
 
     const match = await bcrypt.compare(
       password,
@@ -20,7 +33,7 @@ exports.login = async (req, res) => {
 
     if (!match)
       return res.status(400).json({
-        message: "Invalid Credentials",
+        message: "Invalid Email or Password",
       });
 
     const token = jwt.sign(
@@ -34,37 +47,28 @@ exports.login = async (req, res) => {
       }
     );
 
-    res.json({
+    const userData = {
+      _id: user._id,
+      employeeId: user.employeeId,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      designation: user.designation,
+      department: user.department,
+      phone: user.phone,
+      status: user.status,
+      profileImage: user.profileImage,
+    };
+
+    res.status(200).json({
       token,
-      user,
+      user: userData,
     });
   } catch (error) {
-    res.status(500).json(error);
-  }
-};
+    console.log(error);
 
-exports.register = async (req, res) => {
-  try {
-    const { name, email, password, role } = req.body;
-
-    const exists = await User.findOne({ email });
-
-    if (exists)
-      return res.status(400).json({
-        message: "Email already exists",
-      });
-
-    const hash = await bcrypt.hash(password, 10);
-
-    const user = await User.create({
-      name,
-      email,
-      password: hash,
-      role,
+    res.status(500).json({
+      message: "Server Error",
     });
-
-    res.status(201).json(user);
-  } catch (error) {
-    res.status(500).json(error);
   }
 };

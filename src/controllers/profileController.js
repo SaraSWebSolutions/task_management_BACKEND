@@ -49,7 +49,7 @@ exports.changePassword = async (req, res) => {
 
     if (!validPassword) {
       return res.status(400).json({
-        message: "Current password incorrect",
+        message: "Enter Valid Password",
       });
     }
 

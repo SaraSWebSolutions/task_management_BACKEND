@@ -1,5 +1,6 @@
 const User = require("../models/User");
 const Task = require("../models/Task");
+const Client = require("../models/Clients");
 
 exports.adminDashboard = async (req, res) => {
   try {
@@ -29,10 +30,21 @@ exports.adminDashboard = async (req, res) => {
       status: "Blocked",
     });
 
+    const totalClients = await Client.countDocuments();
+
+    const today = new Date();
+
+    const dueSoon = await Client.countDocuments({
+      renewalDate: {
+        $gte: today,
+        $lte: new Date(today.getTime() + 20 * 24 * 60 * 60 * 1000),
+      },
+    });
+
     const recentTasks = await Task.find()
       .populate("employeeId", "name email")
       .sort({ createdAt: -1 })
-      .limit(10);
+      .limit(5);
 
     res.json({
       employees,
@@ -42,6 +54,8 @@ exports.adminDashboard = async (req, res) => {
       inProgress,
       notStarted,
       blocked,
+      totalClients,
+      dueSoon,
       recentTasks,
     });
   } catch (error) {
@@ -87,7 +101,7 @@ exports.employeeDashboard = async (req, res) => {
       .sort({
         createdAt: -1,
       })
-      .limit(10);
+      .limit(5);
 
     res.json({
       totalTasks,

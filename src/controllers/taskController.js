@@ -31,8 +31,7 @@ exports.createTask = async (req, res) => {
     if (error.code === 11000) {
       return res.status(400).json({
         success: false,
-        message:
-          "Task already exists for this employee, date and time slot",
+        message: "Task already exists for this employee, date and time slot",
       });
     }
 
@@ -80,16 +79,11 @@ exports.getAllTasks = async (req, res) => {
   }
 };
 
-exports.getTaskById = async (
-  req,
-  res
-) => {
+exports.getTaskById = async (req, res) => {
   try {
-    const task = await Task.findById(
-      req.params.id
-    ).populate(
+    const task = await Task.findById(req.params.id).populate(
       "employeeId",
-      "name email"
+      "name email",
     );
 
     if (!task) {
@@ -129,45 +123,35 @@ exports.bulkCreateTasks = async (req, res) => {
     const employeeId = req.user.id;
 
     for (const task of tasks) {
-      if (
-        task.project ||
-        task.taskDescription
-      ) {
-        const existingTask =
-          await Task.findOne({
-            employeeId,
-            date,
-            timeSlot: task.timeSlot,
-          });
+      if (!task.project && !task.taskDescription) continue;
 
-        if (existingTask) {
-          return res.status(400).json({
-            message: `Task already exists for ${task.timeSlot} on ${date}`,
-          });
-        }
-      }
-    }
-
-    const taskData = tasks
-      .filter(
-        (task) =>
-          task.project ||
-          task.taskDescription
-      )
-      .map((task) => ({
+      const existingTask = await Task.findOne({
         employeeId,
         date,
         timeSlot: task.timeSlot,
-        project: task.project,
-        taskDescription:
-          task.taskDescription,
-        status: task.status,
-        remarks: task.remarks,
-      }));
+      });
 
-    await Task.insertMany(taskData);
+      if (existingTask) {
+        await Task.findByIdAndUpdate(existingTask._id, {
+          project: task.project,
+          taskDescription: task.taskDescription,
+          status: task.status,
+          remarks: task.remarks,
+        });
+      } else {
+        await Task.create({
+          employeeId,
+          date,
+          timeSlot: task.timeSlot,
+          project: task.project,
+          taskDescription: task.taskDescription,
+          status: task.status,
+          remarks: task.remarks,
+        });
+      }
+    }
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       message: "Tasks saved successfully",
     });
@@ -175,6 +159,7 @@ exports.bulkCreateTasks = async (req, res) => {
     console.log(error);
 
     res.status(500).json({
+      success: false,
       message: error.message,
     });
   }
@@ -182,13 +167,9 @@ exports.bulkCreateTasks = async (req, res) => {
 
 exports.updateTask = async (req, res) => {
   try {
-    const task = await Task.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
-        returnDocument: "after",
-      },
-    ); 
+    const task = await Task.findByIdAndUpdate(req.params.id, req.body, {
+      returnDocument: "after",
+    });
 
     res.json(task);
   } catch (error) {
@@ -208,20 +189,15 @@ exports.deleteTask = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
-    res.status(500).json({  
+    res.status(500).json({
       message: error.message,
     });
   }
 };
 
-exports.addComment = async (
-  req,
-  res
-) => {
+exports.addComment = async (req, res) => {
   try {
-    const task = await Task.findById(
-      req.params.id
-    );
+    const task = await Task.findById(req.params.id);
 
     if (!task) {
       return res.status(404).json({
@@ -251,63 +227,68 @@ exports.assignTasks = async (req, res) => {
     const { employeeId, date, tasks } = req.body;
 
     for (const task of tasks) {
-      if (
-        task.project ||
-        task.taskDescription
-      ) {
-        const existingTask =
-          await Task.findOne({
-            employeeId,
-            date,
-            timeSlot: task.timeSlot,
-          });
+      if (!task.project && !task.taskDescription) continue;
 
-        if (existingTask) {
-          return res.status(400).json({
-            success: false,
-            message: `Task already assigned for ${task.timeSlot}`,
-          });
-        }
-      }
-    }
-
-    const taskData = tasks
-      .filter(
-        (task) =>
-          task.project ||
-          task.taskDescription
-      )
-      .map((task) => ({
+      const existingTask = await Task.findOne({
         employeeId,
         date,
         timeSlot: task.timeSlot,
-        project: task.project,
-        taskDescription: task.taskDescription,
-        status: task.status,
-        remarks: task.remarks,
-      }));
+      });
 
-    await Task.insertMany(taskData);
+      if (existingTask) {
+        await Task.findByIdAndUpdate(existingTask._id, {
+          project: task.project,
+          taskDescription: task.taskDescription,
+          status: task.status,
+          remarks: task.remarks,
+        });
+      } else {
+        await Task.create({
+          employeeId,
+          date,
+          timeSlot: task.timeSlot,
+          project: task.project,
+          taskDescription: task.taskDescription,
+          status: task.status,
+          remarks: task.remarks,
+        });
+      }
+    }
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
       message: "Tasks assigned successfully",
     });
   } catch (error) {
     console.log(error);
 
-    // Duplicate key fallback
-    if (error.code === 11000) {
-      return res.status(400).json({
-        success: false,
-        message:
-          "Task already assigned for this employee, date and time slot",
-      });
-    }
-
     res.status(500).json({
+      success: false,
       message: error.message,
     });
   }
 };
 
+exports.getEmployeeTasks = async (req, res) => {
+  try {
+    const { employeeId } = req.params;
+    const { date } = req.query;
+
+    const tasks = await Task.find({
+      employeeId,
+      date,
+    }).sort("timeSlot");
+
+    res.json({
+      success: true,
+      tasks,
+    });
+  } catch (error) {
+    console.log(error);
+
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};

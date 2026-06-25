@@ -1,5 +1,9 @@
+
 const express = require("express");
 const router = express.Router();
+
+const auth = require("../middleware/authMiddleware");
+const role = require("../middleware/roleMiddleware");
 
 const {
   addEmployee,
@@ -9,14 +13,14 @@ const {
   deleteEmployee,
 } = require("../controllers/employeeController");
 
-router.post("/", addEmployee);
+router.post("/", auth, role("ADMIN"), addEmployee);
 
-router.get("/", getEmployees);
+router.get("/",  auth, role("ADMIN"), getEmployees);
 
-router.get("/:id", getEmployeeById);
+router.get("/:id",  auth, role("ADMIN"), getEmployeeById);
 
-router.put("/:id", updateEmployee);
+router.put("/:id",  auth, role("ADMIN"), updateEmployee);
 
-router.delete("/:id", deleteEmployee);
+router.delete("/:id",  auth, role("ADMIN"), deleteEmployee);
 
 module.exports = router;

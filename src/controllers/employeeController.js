@@ -15,6 +15,21 @@ exports.addEmployee = async (req, res) => {
       role,
     } = req.body;
 
+    if (
+      !employeeId ||
+      !name ||
+      !email ||
+      !phone ||
+      !password ||
+      !department ||
+      !joiningDate
+    ) {
+      return res.status(400).json({
+        message:
+          "Fill the required fields",
+      });
+    }
+
     const exists = await User.findOne({
       $or: [{ email }, { employeeId }],
     });
@@ -83,6 +98,19 @@ exports.updateEmployee = async (req, res) => {
   try {
     const { employeeId, name, email, phone, department, designation, status,role } =
       req.body;
+
+      if (
+      !employeeId ||
+      !name ||
+      !email ||
+      !phone ||
+      !department
+    ) {
+      return res.status(400).json({
+        message:
+          "Fill the required fields",
+      });
+    }
 
     const employee = await User.findByIdAndUpdate(
       req.params.id,
