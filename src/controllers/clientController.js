@@ -12,7 +12,7 @@ exports.addClient = async (req, res) => {
       client,
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(400).json({
       success: false,
       message: error.message,
     });
@@ -78,7 +78,16 @@ exports.updateClient = async (req, res) => {
   try {
     const client = await Client.findByIdAndUpdate(req.params.id, req.body, {
       returnDocument: "after",
+      runValidators: true,
+      context: "query",
     });
+
+    if (!client) {
+      return res.status(404).json({
+        success: false,
+        message: "Client not found",
+      });
+    }
 
     res.json({
       success: true,
@@ -86,7 +95,7 @@ exports.updateClient = async (req, res) => {
       client,
     });
   } catch (error) {
-    res.status(500).json({
+    res.status(400).json({
       success: false,
       message: error.message,
     });

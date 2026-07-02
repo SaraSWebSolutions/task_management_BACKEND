@@ -1,5 +1,9 @@
 const mongoose = require("mongoose");
 
+// <input type="date"> sends "" when left blank; Mongoose can't cast that
+// to a Date, so treat empty string the same as "no value provided".
+const emptyStringToUndefined = (v) => (v === "" ? undefined : v);
+
 const userSchema = new mongoose.Schema(
   {
     employeeId: {
@@ -9,6 +13,13 @@ const userSchema = new mongoose.Schema(
     },
 
     name: String,
+
+    dob: {
+      type: Date,
+      set: emptyStringToUndefined,
+    },
+
+    bloodGroup: String,
 
     email: {
       type: String,
@@ -39,13 +50,30 @@ const userSchema = new mongoose.Schema(
 
     department: String,
 
-    joiningDate: Date,
+    joiningDate: {
+      type: Date,
+      set: emptyStringToUndefined,
+    },
 
     status: {
       type: String,
       enum: ["ACTIVE", "INACTIVE"],
       default: "ACTIVE",
     },
+
+    salary: Number,
+
+    otAmount: Number,
+
+    bankName: String,
+
+    accountNumber: String,
+
+    ifscCode: String,
+
+    branch: String,
+
+    address: String,
 
     profileImage: String,
   },
