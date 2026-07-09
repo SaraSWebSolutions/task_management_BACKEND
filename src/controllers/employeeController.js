@@ -60,7 +60,7 @@ exports.addEmployee = async (req, res) => {
       password: hashedPassword,
       dob: dob || undefined,
       bloodGroup,
-      role: role || "EMPLOYEE",
+      role: role || "EMPLOYEE" || "MANAGER",
       department,
       designation,
       joiningDate,
@@ -87,7 +87,7 @@ exports.addEmployee = async (req, res) => {
 exports.getEmployees = async (req, res) => {
   try {
     const employees = await User.find({
-      role: { $in: ["ADMIN", "EMPLOYEE"] },
+      role: { $in: ["ADMIN", "EMPLOYEE", "MANAGER"] },
     }).select("-password");
 
     res.json(employees);
