@@ -7,14 +7,13 @@ exports.addCampaign = async (req, res) => {
     try {
         const campaign = await Campaign.create({ name, title, body, emails });
 
-        // Socket instance attached to app in server.js
         const io = req.app.get("io");
 
         const total = emails.length;
         let successCount = 0;
         let failCount = 0;
+        const failures = [];
 
-        // Send emails sequentially so we can emit progress per email
         for (let i = 0; i < emails.length; i++) {
             const email = emails[i];
             try {
@@ -39,6 +38,7 @@ exports.addCampaign = async (req, res) => {
                 });
             } catch (err) {
                 failCount += 1;
+                failures.push({ email, error: err.message });
                 io?.emit("campaign:progress", {
                     campaignId: campaign._id,
                     email,
@@ -57,11 +57,18 @@ exports.addCampaign = async (req, res) => {
             failCount,
         });
 
-        res.status(200).json({
-            success: true,
-            message: "Campaign created and emails processed",
+        const statusCode = successCount === 0 ? 502 : failCount === 0 ? 200 : 207;
+
+        res.status(statusCode).json({
+            success: successCount > 0 && failCount === 0,
+            message: successCount === 0
+                ? "Campaign created but no emails were sent"
+                : failCount === 0
+                    ? "Campaign created and emails processed"
+                    : "Campaign created, but some emails failed to send",
             campaign,
             stats: { total, successCount, failCount },
+            failures,
         });
     } catch (error) {
         res.status(400).json({ success: false, message: error.message });
@@ -118,6 +125,7 @@ exports.followUpCampaign = async (req, res) => {
         const total = campaign.emails.length;
         let successCount = 0;
         let failCount = 0;
+        const failures = [];
 
         for (let i = 0; i < campaign.emails.length; i++) {
             const email = campaign.emails[i];
@@ -146,6 +154,7 @@ exports.followUpCampaign = async (req, res) => {
 
             } catch (err) {
                 failCount++;
+                failures.push({ email, error: err.message });
 
                 io?.emit("campaign:followup-progress", {
                     campaignId: campaign._id,
@@ -168,14 +177,21 @@ exports.followUpCampaign = async (req, res) => {
         campaign.isFollowedUp = true;
         campaign.save();
 
-        res.status(200).json({
-            success: true,
-            message: "Follow-up emails sent successfully",
+        const statusCode = successCount === 0 ? 502 : failCount === 0 ? 200 : 207;
+
+        res.status(statusCode).json({
+            success: successCount > 0 && failCount === 0,
+            message: successCount === 0
+                ? "Follow-up emails failed to send"
+                : failCount === 0
+                    ? "Follow-up emails sent successfully"
+                    : "Some follow-up emails failed to send",
             stats: {
                 total,
                 successCount,
                 failCount
-            }
+            },
+            failures,
         });
 
     } catch (error) {
