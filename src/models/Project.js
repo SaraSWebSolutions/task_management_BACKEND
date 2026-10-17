@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 
+const emptyToUndefined = (v) => (v === "" ? undefined : v);
+
 // hourlyRate is saved when the entry is added, so later salary changes
 // don't rewrite the cost of work that is already done.
 const entry = {
@@ -16,9 +18,18 @@ const projectSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["PLANNING", "IN_PROGRESS", "COMPLETED"],
+      enum: ["PLANNING", "IN_PROGRESS", "ON_HOLD", "COMPLETED"],
       default: "PLANNING",
     },
+
+    description: { type: String, trim: true },
+    priority: {
+      type: String,
+      enum: ["LOW", "MEDIUM", "HIGH"],
+      default: "MEDIUM",
+    },
+    startDate: { type: Date, set: emptyToUndefined },
+    endDate: { type: Date, set: emptyToUndefined },
 
     projectValue: { type: Number, default: 0 }, // original project value
     clientEstimationHours: { type: Number, default: 0 },

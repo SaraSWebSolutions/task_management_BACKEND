@@ -3,7 +3,7 @@ const express = require("express");
 const router = express.Router();
 
 const auth = require("../middleware/authMiddleware");
-const role = require("../middleware/roleMiddleware");
+const can = require("../middleware/permissionMiddleware");
 
 const {
   createTask,
@@ -23,15 +23,15 @@ router.post("/", auth, createTask);
 
 router.get("/my-tasks", auth, getMyTasks);
 
-router.get("/all-tasks", auth, role("ADMIN"), getAllTasks);
+router.get("/all-tasks", auth, can("tasks.view_all"), getAllTasks);
 
-router.post("/assign", auth, role("ADMIN"), assignTasks);
+router.post("/assign", auth, can("tasks.assign"), assignTasks);
 
 router.get("/:id", auth, getTaskById);
 
 router.post("/:id/comment", auth, addComment);
 
-router.put("/comment/:id", auth, role("ADMIN"), commentTask);
+router.put("/comment/:id", auth, can("tasks.assign"), commentTask);
 
 router.post("/bulk-create", auth, bulkCreateTasks);
 

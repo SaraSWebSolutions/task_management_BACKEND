@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { permissionsFor } = require("../utils/rbac");
 
 exports.login = async (req, res) => {
   try {
@@ -47,6 +48,10 @@ exports.login = async (req, res) => {
       }
     );
 
+    User.updateOne({ _id: user._id }, { lastLoginAt: new Date() }).catch(() => {});
+
+    const permissions = await permissionsFor(user);
+
     const userData = {
       _id: user._id,
       employeeId: user.employeeId,
@@ -58,11 +63,13 @@ exports.login = async (req, res) => {
       phone: user.phone,
       status: user.status,
       profileImage: user.profileImage,
+      roleKey: user.roleKey || user.role,
     };
 
     res.status(200).json({
       token,
       user: userData,
+      permissions,
     });
   } catch (error) {
     console.log(error);

@@ -57,15 +57,34 @@ exports.getLead = async (req, res) => {
 // Basic details only. The flow (demo / quotation / sales / project) has its own endpoints.
 exports.updateLead = async (req, res) => {
   try {
-    const { name, company, email, phone, source, requestType, demoType, notes } =
-      req.body;
+    const {
+      name,
+      company,
+      email,
+      phone,
+      source,
+      requestType,
+      demoType,
+      notes,
+      value,
+      priority,
+    } = req.body;
     const lead = await Lead.findById(req.params.id);
     if (!lead) return fail(res, 404, "Lead not found");
 
     if (requestType === "DEMO" && !demoType)
       return fail(res, 400, "Select demo type (Online / Offline)");
 
-    Object.assign(lead, { name, company, email, phone, notes, ...(source && { source }) });
+    Object.assign(lead, {
+      name,
+      company,
+      email,
+      phone,
+      notes,
+      ...(source && { source }),
+      ...(value !== undefined && { value }),
+      ...(priority && { priority }),
+    });
     lead.requestType = requestType || lead.requestType;
     lead.demoType = lead.requestType === "DEMO" ? demoType : undefined;
 

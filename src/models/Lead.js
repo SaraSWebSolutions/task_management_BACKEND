@@ -28,6 +28,19 @@ const leadSchema = new mongoose.Schema(
       default: "OTHER",
     },
 
+    // Expected deal value (shown in the leads list and the pipeline)
+    value: {
+      type: Number,
+      min: 0,
+      default: 0,
+      set: (v) => (v === "" || v == null ? 0 : v),
+    },
+    priority: {
+      type: String,
+      enum: ["LOW", "MEDIUM", "HIGH"],
+      default: "MEDIUM",
+    },
+
     // What the lead asked for when they first contacted us
     requestType: { type: String, enum: ["DEMO", "QUOTATION"], required: true },
 

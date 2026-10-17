@@ -75,6 +75,24 @@ const userSchema = new mongoose.Schema(
 
     address: String,
 
+    gender: {
+      type: String,
+      enum: ["Male", "Female", "Other"],
+      set: emptyStringToUndefined,
+    },
+
+    city: String,
+    state: String,
+    zipCode: String,
+    country: String,
+
+    // Key of the Role document. `role` stays the base access level.
+    roleKey: String,
+
+    // Extra permissions on top of the role's permissions.
+    permissions: [String],
+
+    lastLoginAt: Date,
     profileImage: String,
   },
   {

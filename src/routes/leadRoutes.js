@@ -3,22 +3,22 @@ const router = express.Router();
 
 const c = require("../controllers/leadController");
 const auth = require("../middleware/authMiddleware");
-const role = require("../middleware/roleMiddleware");
+const can = require("../middleware/permissionMiddleware");
 
-router.use(auth, role("ADMIN", "MANAGER"));
+router.use(auth);
 
-router.get("/assignees", c.getAssignees); // must stay above "/:id"
+router.get("/assignees", can("leads.view"), c.getAssignees); // must stay above "/:id"
 
-router.get("/", c.getLeads);
-router.post("/", c.addLead);
-router.get("/:id", c.getLead);
-router.put("/:id", c.updateLead);
-router.delete("/:id", c.deleteLead);
+router.get("/", can("leads.view"), c.getLeads);
+router.post("/", can("leads.manage"), c.addLead);
+router.get("/:id", can("leads.view"), c.getLead);
+router.put("/:id", can("leads.manage"), c.updateLead);
+router.delete("/:id", can("leads.manage"), c.deleteLead);
 
-router.put("/:id/demo", c.saveDemo);
-router.put("/:id/marketing", c.setMarketing);
-router.post("/:id/quotation", c.sendQuotation);
-router.post("/:id/convert-sales", c.convertToSales);
-router.post("/:id/convert-project", c.convertToProject);
+router.put("/:id/demo", can("leads.manage"), c.saveDemo);
+router.put("/:id/marketing", can("leads.manage"), c.setMarketing);
+router.post("/:id/quotation", can("leads.manage"), c.sendQuotation);
+router.post("/:id/convert-sales", can("leads.manage"), c.convertToSales);
+router.post("/:id/convert-project", can("leads.manage"), c.convertToProject);
 
 module.exports = router;
