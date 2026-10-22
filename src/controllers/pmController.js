@@ -48,6 +48,7 @@ exports.getOptions = async (req, res) => {
 // ------------------------------------------------------------------ tasks
 const TASK_FIELDS = [
   "project",
+  "category",
   "milestone",
   "title",
   "description",
@@ -101,12 +102,16 @@ exports.getTasks = async (req, res) => {
 exports.addTask = async (req, res) => {
   try {
     if (!req.body.title?.trim()) return fail(res, 400, "Task title is required");
-    if (!req.body.project) return fail(res, 400, "Select a project");
-    if (!(await Project.exists({ _id: req.body.project })))
+    // Support and other work doesn't need a project
+    const hasProject = !!req.body.project;
+    if (!hasProject && !["SUPPORT", "OTHER"].includes(req.body.category))
+      return fail(res, 400, "Select a project, or mark this as support / other work");
+    if (hasProject && !(await Project.exists({ _id: req.body.project })))
       return fail(res, 404, "Project not found");
 
     const task = new ProjectTask({
       ...pick(req.body, TASK_FIELDS),
+      category: hasProject ? "PROJECT" : req.body.category,
       createdBy: req.user.id,
     });
     withCompletion(task);
@@ -125,6 +130,9 @@ exports.updateTask = async (req, res) => {
       return fail(res, 400, "Task title is required");
 
     task.set(pick(req.body, TASK_FIELDS));
+    if (task.project) task.category = "PROJECT";
+    else if (!["SUPPORT", "OTHER"].includes(task.category))
+      return fail(res, 400, "Select a project, or mark this as support / other work");
     withCompletion(task);
     await task.save();
     res.json({ success: true, message: "Task updated", task });
@@ -340,12 +348,11 @@ exports.getTimeEntries = async (req, res) => {
 exports.addTimeEntry = async (req, res) => {
   try {
     const b = req.body;
-    if (!b.project) return fail(res, 400, "Select a project");
     if (!b.date) return fail(res, 400, "Select a date");
     const hours = Number(b.hours);
     if (!(hours > 0 && hours <= 24))
       return fail(res, 400, "Hours must be between 0 and 24");
-    if (!(await Project.exists({ _id: b.project })))
+    if (b.project && !(await Project.exists({ _id: b.project })))
       return fail(res, 404, "Project not found");
 
     // Only people who manage projects can log time for someone else
@@ -353,7 +360,10 @@ exports.addTimeEntry = async (req, res) => {
       b.user && canSeeAllTime(req) ? b.user : req.user.id;
 
     const entry = await TimeEntry.create({
-      project: b.project,
+      project: b.project || undefined,
+      taskRef: b.taskRef || undefined,
+      startTime: b.startTime || undefined,
+      endTime: b.endTime || undefined,
       task: b.task,
       notes: b.notes,
       date: b.date,

@@ -78,6 +78,29 @@ const GROUPS = [
 const ALL_PERMISSIONS = GROUPS.flatMap((g) => g.permissions.map((p) => p.key));
 
 // Defaults mirror what each role could already do before RBAC existed.
+// What a manager needs for: lead -> demo / quotation -> sales -> project -> tasks.
+const MANAGER_DEFAULTS = [
+  "campaigns.view",
+  "campaigns.manage",
+  "leads.view",
+  "leads.manage",
+  "followups.view",
+  "followups.manage",
+  "crmtasks.view",
+  "crmtasks.manage",
+  "deals.view",
+  "deals.manage",
+  "clients.view",
+  "projects.view",
+  "projects.manage",
+  "projecttasks.view",
+  "projecttasks.manage",
+  "milestones.view",
+  "milestones.manage",
+  "timelogs.view",
+  "timelogs.manage",
+];
+
 const SYSTEM_ROLES = {
   ADMIN: {
     key: "ADMIN",
@@ -92,13 +115,8 @@ const SYSTEM_ROLES = {
     key: "MANAGER",
     name: "Manager",
     description:
-      "Works on campaigns and leads. Gets more access when an admin turns permissions on.",
-    permissions: [
-      "campaigns.view",
-      "campaigns.manage",
-      "leads.view",
-      "leads.manage",
-    ],
+      "Follows leads from demo or quotation to sales, then creates and runs the project: tasks, team, milestones and time. Admin can turn more permissions on.",
+    permissions: MANAGER_DEFAULTS,
     baseRole: "MANAGER",
     isSystem: true,
   },
@@ -113,4 +131,4 @@ const SYSTEM_ROLES = {
   },
 };
 
-module.exports = { GROUPS, ALL_PERMISSIONS, SYSTEM_ROLES };
+module.exports = { GROUPS, ALL_PERMISSIONS, SYSTEM_ROLES, MANAGER_DEFAULTS };

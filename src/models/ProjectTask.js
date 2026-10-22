@@ -6,11 +6,17 @@ const emptyToUndefined = (v) => (v === "" ? undefined : v);
 // Separate from the employee daily Task model and from CrmTask.
 const projectTaskSchema = new mongoose.Schema(
   {
+    // Optional: support and other work has no project.
     project: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Project",
-      required: true,
+      set: emptyToUndefined,
       index: true,
+    },
+    category: {
+      type: String,
+      enum: ["PROJECT", "SUPPORT", "OTHER"],
+      default: "PROJECT",
     },
     milestone: {
       type: mongoose.Schema.Types.ObjectId,

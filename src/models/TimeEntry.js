@@ -4,12 +4,15 @@ const mongoose = require("mongoose");
 // salary changes don't rewrite the cost of time already logged.
 const timeEntrySchema = new mongoose.Schema(
   {
+    // Optional: time on support / other work has no project.
     project: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Project",
-      required: true,
       index: true,
     },
+    taskRef: { type: mongoose.Schema.Types.ObjectId, ref: "ProjectTask", index: true },
+    startTime: { type: String, trim: true }, // "HH:MM", optional
+    endTime: { type: String, trim: true },
     task: { type: String, trim: true }, // free text description of the work
     user: {
       type: mongoose.Schema.Types.ObjectId,

@@ -22,6 +22,9 @@ const roleSchema = new mongoose.Schema(
     },
 
     isSystem: { type: Boolean, default: false },
+
+    // Bumped when new default permissions are added once to a built-in role.
+    seedVersion: { type: Number, default: 0 },
   },
   { timestamps: true },
 );

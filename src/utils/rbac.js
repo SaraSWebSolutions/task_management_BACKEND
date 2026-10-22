@@ -1,5 +1,9 @@
 const Role = require("../models/Role");
-const { ALL_PERMISSIONS, SYSTEM_ROLES } = require("../config/permissions");
+const { ALL_PERMISSIONS, SYSTEM_ROLES, MANAGER_DEFAULTS } = require("../config/permissions");
+
+// Bump when MANAGER_DEFAULTS grows. The new permissions are added once to the
+// existing Manager role; nothing is ever removed and later edits stay.
+const SEED_VERSION = 1;
 
 // Creates the three built-in roles if missing. Never overwrites edits.
 exports.ensureSystemRoles = async () => {
@@ -11,6 +15,11 @@ exports.ensureSystemRoles = async () => {
         upsert: true,
       },
     })),
+  );
+
+  await Role.updateOne(
+    { key: "MANAGER", $or: [{ seedVersion: { $exists: false } }, { seedVersion: { $lt: SEED_VERSION } }] },
+    { $addToSet: { permissions: { $each: MANAGER_DEFAULTS } }, $set: { seedVersion: SEED_VERSION } },
   );
 };
 

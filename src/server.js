@@ -47,6 +47,7 @@ app.use("/api/pm", require("./routes/pmRoutes"));
 app.use("/api/reports", require("./routes/reportRoutes"));
 app.use("/api/finance", require("./routes/financeRoutes"));
 app.use("/api/analytics", require("./routes/analyticsRoutes"));
+app.use("/api/my-work", require("./routes/myWorkRoutes"));
 
 const server = http.createServer(app);
 
