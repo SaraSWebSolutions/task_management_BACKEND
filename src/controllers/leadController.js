@@ -2,6 +2,7 @@ const Lead = require("../models/Lead");
 const User = require("../models/User");
 const Project = require("../models/Project");
 const { buildEntries } = require("../utils/costing");
+const { notify } = require("../utils/notify");
 
 const MAX_DOC = 7_000_000; // characters of base64, roughly 5 MB file
 
@@ -163,6 +164,10 @@ exports.saveDemo = async (req, res) => {
 
     if (lead.status === "NEW") lead.status = "DEMO_SCHEDULED";
     await lead.save();
+    await notify(lead.assignedTo, {
+      type: "LEAD", title: "Demo assigned to you",
+      message: `${lead.name}${lead.company ? ` (${lead.company})` : ""}`, link: "/leads",
+    }, { except: req.user.id });
 
     res.json({ success: true, message: "Demo details saved" });
   } catch (error) {

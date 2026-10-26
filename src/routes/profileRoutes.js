@@ -6,9 +6,12 @@ const {
   getProfile,
   updateProfile,
   changePassword,
+  getSummary,
 } = require("../controllers/profileController");
 
 router.get("/", auth, getProfile);
+
+router.get("/summary", auth, getSummary);
 
 router.put("/", auth, updateProfile);
 

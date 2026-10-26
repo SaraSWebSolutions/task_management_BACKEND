@@ -86,8 +86,8 @@ exports.revenue = async (req, res) => {
     const lowest = new Date(Math.min(r.prevStart, monthStart(y, m - 6)));
 
     const [payments, expenses, subs] = await Promise.all([
-      Payment.find({ status: "SUCCESSFUL", date: { $gte: lowest, $lt: new Date(Math.max(r.end.getTime(), Date.now() + DAY)) } }).populate("invoice", "serviceType"),
-      FinanceExpense.find({ status: { $ne: "REJECTED" }, date: { $gte: r.start, $lt: r.end } }, "amount"),
+      Payment.find({ status: "SUCCESSFUL", date: { $gte: lowest, $lt: new Date(Math.max(r.end.getTime(), Date.now() + DAY)) } }).populate("invoice", "serviceType taxAmount total"),
+      FinanceExpense.find({ status: { $ne: "REJECTED" }, date: { $gte: r.start, $lt: r.end } }, "amount taxAmount"),
       Subscription.find({ status: { $in: ["ACTIVE", "PAST_DUE"] } }, "amount billingCycle"),
     ]);
 
@@ -96,7 +96,10 @@ exports.revenue = async (req, res) => {
     const prev = payments.filter((p) => between(p.date, r.prevStart, r.prevEnd));
     const gross = sum(cur, (p) => p.amount);
     const prevGross = sum(prev, (p) => p.amount);
-    const net = gross - sum(expenses, (e) => e.amount);
+    // Net = what you keep: take off the GST owed to the government and the expenses,
+    // then add back the GST you paid on those expenses.
+    const gstOwed = sum(cur, (p) => (p.invoice?.total > 0 ? (p.amount * (p.invoice.taxAmount || 0)) / p.invoice.total : 0));
+    const net = gross - gstOwed - sum(expenses, (e) => e.amount) + sum(expenses, (e) => e.taxAmount);
 
     // Month by month, split by service for the stacked chart
     const months = monthBuckets(r.start, r.end).map((b) => ({ ...b, total: 0, services: {} }));

@@ -30,6 +30,7 @@ router.get(
 
 // Revenue + finance reports
 router.get("/revenue", can("finance.view"), reports.getRevenue);
+router.get("/dashboard", can("finance.view"), reports.getDashboard);
 router.get("/reports", can("finance.view"), reports.getReports);
 
 // Invoices

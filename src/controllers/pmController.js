@@ -4,6 +4,7 @@ const Milestone = require("../models/Milestone");
 const TimeEntry = require("../models/TimeEntry");
 const User = require("../models/User");
 const { hourlyRateOf } = require("../utils/costing");
+const { notify } = require("../utils/notify");
 
 const fail = (res, code, message) =>
   res.status(code).json({ success: false, message });
@@ -116,6 +117,7 @@ exports.addTask = async (req, res) => {
     });
     withCompletion(task);
     await task.save();
+    await notify(task.assignee, { type: "TASK", title: "New task assigned", message: task.title, link: "/my-work" }, { except: req.user.id });
     res.status(201).json({ success: true, message: "Task added", task });
   } catch (error) {
     fail(res, 400, error.message);
@@ -129,12 +131,15 @@ exports.updateTask = async (req, res) => {
     if (req.body.title !== undefined && !req.body.title.trim())
       return fail(res, 400, "Task title is required");
 
+    const prevAssignee = String(task.assignee || "");
     task.set(pick(req.body, TASK_FIELDS));
     if (task.project) task.category = "PROJECT";
     else if (!["SUPPORT", "OTHER"].includes(task.category))
       return fail(res, 400, "Select a project, or mark this as support / other work");
     withCompletion(task);
     await task.save();
+    if (task.assignee && String(task.assignee) !== prevAssignee)
+      await notify(task.assignee, { type: "TASK", title: "Task assigned to you", message: task.title, link: "/my-work" }, { except: req.user.id });
     res.json({ success: true, message: "Task updated", task });
   } catch (error) {
     fail(res, 400, error.message);
