@@ -94,6 +94,10 @@ const userSchema = new mongoose.Schema(
 
     lastLoginAt: Date,
     profileImage: String,
+
+    // Forgot-password: only a SHA-256 hash of the emailed token is stored.
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
   },
   {
     timestamps: true,
