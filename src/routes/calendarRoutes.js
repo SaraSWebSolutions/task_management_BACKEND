@@ -5,9 +5,9 @@ const auth = require("../middleware/authMiddleware");
 const can = require("../middleware/permissionMiddleware");
 const c = require("../controllers/calendarController");
 
-// Login only. can() with no arguments just loads the caller's permissions.
+// Needs calendar.view.
 // People see events they created or were invited to (admin sees all).
-router.use(auth, can());
+router.use(auth, can("calendar.view"));
 
 router.get("/", c.getCalendar);
 router.get("/options", c.getOptions);

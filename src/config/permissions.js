@@ -6,6 +6,11 @@ const group = (key, label, perms) => ({
 });
 
 const GROUPS = [
+  group("general", "General", [
+    ["dashboard.view", "View Dashboard"],
+    ["mywork.view", "My Work"],
+    ["calendar.view", "Calendar"],
+  ]),
   group("users", "User Management", [
     ["users.view", "View Users"],
     ["users.create", "Create Users"],
@@ -80,6 +85,9 @@ const ALL_PERMISSIONS = GROUPS.flatMap((g) => g.permissions.map((p) => p.key));
 // Defaults mirror what each role could already do before RBAC existed.
 // What a manager needs for: lead -> demo / quotation -> sales -> project -> tasks.
 const MANAGER_DEFAULTS = [
+  "dashboard.view",
+  "mywork.view",
+  "calendar.view",
   "campaigns.view",
   "campaigns.manage",
   "leads.view",

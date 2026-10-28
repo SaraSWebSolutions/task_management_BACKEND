@@ -7,7 +7,7 @@ const can = require("../middleware/permissionMiddleware");
 
 router.use(auth);
 
-router.get("/assignees", can("leads.view"), c.getAssignees); // must stay above "/:id"
+router.get("/assignees", can("leads.view", "projects.view"), c.getAssignees); // must stay above "/:id"
 
 router.get("/", can("leads.view"), c.getLeads);
 router.post("/", can("leads.manage"), c.addLead);

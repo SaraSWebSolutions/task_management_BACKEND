@@ -2,10 +2,11 @@ const express = require("express");
 const router = express.Router();
 
 const auth = require("../middleware/authMiddleware");
+const can = require("../middleware/permissionMiddleware");
 const c = require("../controllers/myWorkController");
 
-// Login only. Every handler works on the caller's own data.
-router.use(auth);
+// Needs mywork.view. Every handler works on the caller's own data.
+router.use(auth, can("mywork.view"));
 
 router.get("/", c.getMyWork);
 router.post("/tasks", c.addTask);

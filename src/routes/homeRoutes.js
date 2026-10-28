@@ -5,7 +5,7 @@ const auth = require("../middleware/authMiddleware");
 const can = require("../middleware/permissionMiddleware");
 const { getOverview } = require("../controllers/homeController");
 
-// Login only. The controller leaves out any block the caller isn't allowed to see.
-router.get("/overview", auth, can(), getOverview);
+// Needs dashboard.view. The controller leaves out any block the caller isn't allowed to see.
+router.get("/overview", auth, can("dashboard.view"), getOverview);
 
 module.exports = router;
